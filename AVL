@@ -1,0 +1,229 @@
+/*The header file is about AVL tree.You can use a array to create a AVL tree.
+ *The header file has 'insert'part and 'find'part.
+ *The header file don't  have 'delete' part yet.I will update the part afterwards.
+ */
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+struct TreeNode
+{
+	int val;
+	TreeNode* left;
+	TreeNode* right;
+	unsigned int height;
+	TreeNode() :val(0), left(nullptr), right(nullptr), height(1) {}
+	TreeNode(int _val) :val(_val), left(nullptr), right(nullptr), height(1) {}
+};
+class balancedBinaryTree
+{
+	/*本平衡二叉树不能有重复元素，可以实现查找、插入等功能
+	 */
+private:
+	TreeNode* treeRoot;
+	int count;
+public:
+	balancedBinaryTree() :treeRoot(nullptr), count(0) {}
+	void insert(TreeNode* &root,int target);
+	void createTree(vector<int> nums);
+	int getHeight(TreeNode* root);
+	void updateHeight(TreeNode* root);
+	void LL(TreeNode* &root);
+	void LR(TreeNode* &root);
+	void RL(TreeNode* &root);
+	void RR(TreeNode* &root);
+	bool check(TreeNode* root);
+	void print();
+	void inOrder(TreeNode* root);
+	void deleteTree(TreeNode* root);
+	bool search(int target);
+	TreeNode* getRoot();
+	int getCount();
+	~balancedBinaryTree();
+};
+
+void balancedBinaryTree::insert(TreeNode* &root,int target)
+{
+	//insert函数要写成递归形式，方便调整
+	if (root == nullptr)
+	{
+		TreeNode* p = new TreeNode(target);
+		count++;
+		root = p;
+	}
+	else
+	{
+		//先找到target应该插入的位置,再进行调整
+		if (root->val > target)
+		{
+			insert(root->left, target);
+		}
+		else
+		{
+			insert(root->right, target);
+		}
+		//更新root高度
+		updateHeight(root);
+		//从下往上进行平衡性调整
+		//先判断是LL,LR,RL还是RR
+		if (getHeight(root->left) - getHeight(root->right) > 1)
+		{
+			if (getHeight(root->left->left) > getHeight(root->left->right))
+			{
+				LL(root);
+			}
+			else
+			{
+				LR(root);
+			}
+		}
+		else if (getHeight(root->left) - getHeight(root->right) < -1)
+		{
+			if (getHeight(root->right->left) > getHeight(root->right->right))
+			{
+				RL(root);
+			}
+			else
+			{
+				RR(root);
+			}
+		}
+	}
+}
+
+void balancedBinaryTree::createTree(vector<int> nums)
+{
+	for (int i = 0; i < nums.size(); i++)
+	{
+		insert(treeRoot,nums[i]);
+	}
+}
+
+int balancedBinaryTree::getHeight(TreeNode* root)
+{
+	if (root == nullptr)
+	{
+		return 0;
+	}
+	else
+	{
+		return root->height;
+	}
+}
+
+void balancedBinaryTree::updateHeight(TreeNode* root)
+{
+	root->height = max(getHeight(root->left), getHeight(root->right)) + 1;
+}
+
+void balancedBinaryTree::LL(TreeNode* &root)
+{
+	TreeNode* temp = root->left;
+	root->left = temp->right;
+	temp->right = root;
+	updateHeight(root);
+	updateHeight(temp);
+	root = temp;
+}
+
+void balancedBinaryTree::RR(TreeNode* &root)
+{
+	TreeNode* temp = root->right;
+	root->right = temp->left;
+	temp->left = root;
+	updateHeight(root);
+	updateHeight(temp);
+	root = temp;
+}
+
+void balancedBinaryTree::LR(TreeNode* &root)
+{
+	//先左旋,再右旋
+	RR(root->left);
+	LL(root);
+}
+
+void balancedBinaryTree::RL(TreeNode* &root)
+{
+	//先右旋,再左旋
+	LL(root->right);
+	RR(root);
+}
+
+void balancedBinaryTree::print()
+{
+	//中序遍历
+	cout << "中序遍历：";
+	inOrder(treeRoot);
+	cout << endl;
+}
+
+void balancedBinaryTree::inOrder(TreeNode* root)
+{
+	if (root != nullptr)
+	{
+		inOrder(root->left);
+		cout << root->val << " ";
+		inOrder(root->right);
+	}
+}
+
+balancedBinaryTree::~balancedBinaryTree()
+{
+	deleteTree(treeRoot);
+}
+
+void balancedBinaryTree::deleteTree(TreeNode* root)
+{
+	if (root != nullptr)
+	{
+		deleteTree(root->left);
+		deleteTree(root->right);
+		delete root;
+	}
+}
+
+bool balancedBinaryTree::search(int target)
+{
+	TreeNode* root = treeRoot;
+	while (root != nullptr)
+	{
+		if (target == root->val)
+		{
+			return true;
+		}
+		else if (target < root->val)
+		{
+			root = root->left;
+		}
+		else
+		{
+			root = root->right;
+		}
+	}
+	return false;
+}
+
+bool balancedBinaryTree::check(TreeNode* root)
+{
+	bool flag = true;
+	if (root != nullptr)
+	{
+		if (abs(getHeight(root->left) - getHeight(root->right)) > 1 || !check(root->left) || !check(root->right))
+		{
+			flag = false;
+		}
+	}
+	return flag;
+}
+
+TreeNode* balancedBinaryTree::getRoot()
+{
+	return treeRoot;
+}
+
+int balancedBinaryTree::getCount()
+{
+	return count;
+}
