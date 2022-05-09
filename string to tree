@@ -1,0 +1,196 @@
+/*The header file uses string to create a tree,which is called deserialize.Meantime,the header file also can transfers a tree to string,which is called serialize.
+ *The header file is helpful when you meet some difficulties on the leetcode.It can help you debug in vs.
+ */
+#include<iostream>
+#include<vector>
+#include<string>
+#include<queue>
+using namespace std;
+
+struct TreeNode
+{
+	int val;
+	TreeNode* left;
+	TreeNode* right;
+	TreeNode() :val(0), left(nullptr), right(nullptr) {}
+	TreeNode(int _val) :val(_val), left(nullptr), right(nullptr) {}
+	TreeNode(int _val, TreeNode* _left, TreeNode* _right) :val(_val), left(_left), right(_right) {}
+};
+class tree
+{
+private:
+	TreeNode* treeRoot;
+	int count;//结点个数
+public:
+	tree() :treeRoot(nullptr), count(0) {}
+	tree(TreeNode* _root) :treeRoot(_root), count(1) {}
+	void transfer(string str, vector<string>& node);
+	string serialize();
+	void deserialize(string str);
+	void preOrder(TreeNode* root);
+	void inOrder(TreeNode* root);
+	void printPreOrder();
+	void printInOrder();
+	TreeNode* getroot();
+	int getcount();
+	void deleteTree(TreeNode* root);
+	~tree();
+};
+
+void tree::transfer(string str, vector<string>& node)
+{
+	/*接受形如"5,1,4,null,null,3,-6,null,7"这样的输入,这是一棵二叉树的层序遍历，
+	 * 其中null代表空结点
+	 */
+	string temp;
+	int i = 0, j = 0;
+	for (i = 0; i < str.size(); i++)
+	{
+		if (str[i] == ',')
+		{
+			temp.assign(str, j, i - j);
+			node.emplace_back(temp);
+			j = i + 1;
+		}
+	}
+	//防止str是空串
+	if (j < str.size())
+	{
+		temp.assign(str, j, str.size() - j);
+		node.emplace_back(temp);
+	}
+}
+
+void tree::deserialize(string str)
+{
+	//反序列化
+	vector<string>node;
+	transfer(str, node);
+	//采用层序遍历构造一棵二叉树
+	queue<TreeNode*>q;
+	TreeNode* temp = nullptr;
+	int flag = -1;
+	for (int i = 0; i < node.size(); i++)
+	{
+		//首先判断是否为空结点
+		if (node[i] != "null")
+		{
+			TreeNode* p = new TreeNode(stoi(node[i]));
+			if (count == 0)
+			{
+				treeRoot = p;
+			}
+			else
+			{
+				temp = q.front();
+				flag == 0 ? temp->left = p : temp->right = p;
+			}
+			q.push(p);
+			count++;
+		}
+		if (++flag == 2)
+		{
+			q.pop();
+			flag = 0;
+		}
+	}
+}
+
+
+string tree::serialize()
+{
+	//序列化
+	//使用层序遍历去实现
+	string s="",str="";
+	queue<TreeNode*>q;
+	if (treeRoot != nullptr)
+	{
+		q.push(treeRoot);
+	}
+	TreeNode* temp = nullptr;
+	while (!q.empty())
+	{
+		temp = q.front();
+		q.pop();
+		if (temp == nullptr)
+		{
+			str += "null,";
+		}
+		else
+		{
+			s += str;
+			str.clear();
+			s += to_string(temp->val) + ",";
+			q.push(temp->left);
+			q.push(temp->right);
+		}
+	}
+	if (treeRoot != nullptr)
+	{
+		//去掉末尾的"，"
+		s.erase(s.length()-1,1);
+	}
+	return s;
+}
+
+void tree::preOrder(TreeNode* root)
+{
+	if (root != nullptr)
+	{
+		cout << root->val << " ";
+		preOrder(root->left);
+		preOrder(root->right);
+	}
+}
+
+void tree::inOrder(TreeNode* root)
+{
+	if (root != nullptr)
+	{
+		inOrder(root->left);
+		cout << root->val << " ";
+		inOrder(root->right);
+	}
+}
+
+void tree::printPreOrder()
+{
+	cout << "先序遍历：";
+	preOrder(treeRoot);
+	cout << endl;
+}
+
+void tree::printInOrder()
+{
+	cout << "中序遍历：";
+	inOrder(treeRoot);
+	cout << endl;
+}
+
+TreeNode* tree::getroot()
+{
+	return treeRoot;
+}
+
+int tree::getcount()
+{
+	return count;
+}
+
+void tree::deleteTree(TreeNode* root)
+{
+	//进行后序遍历
+	if (root != nullptr)
+	{
+		deleteTree(root->left);
+		deleteTree(root->right);
+		delete root;
+	}
+}
+
+tree::~tree()
+{
+	deleteTree(treeRoot);
+	treeRoot = nullptr;
+	count = 0;
+}
