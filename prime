@@ -1,0 +1,85 @@
+/*The header file is to judge a number is a prime or not.
+ */
+#include<iostream>
+#include<vector>
+using namespace std;
+
+class prime
+{
+private:
+	int upper_boundary;
+	vector<bool>isPrime;
+public:
+	void create();
+	void judge();
+	void Euler(vector<bool>& isPrime);
+};
+
+void prime::create()
+{
+	cout << "请输入预定范围的上界" << endl;
+	cin >> this->upper_boundary;
+	this->isPrime = vector<bool>(upper_boundary + 1, true);
+	Euler(isPrime);
+}
+
+void prime::judge()
+{
+	int num = 0;
+	cout << "请输入一个正整数" << endl;
+	cin >> num;
+	if (num > this->upper_boundary)
+	{
+		cout << "超过了预定的范围" << endl;
+	}
+	else
+	{
+		if (isPrime[num])
+		{
+			cout << num << "是素数" << endl;
+		}
+		else
+		{
+			cout << num << "是合数" << endl;
+		}
+	}
+}
+
+void prime::Euler(vector<bool>& isPrime)
+{
+	/*采用欧拉筛法
+	为了避免像埃氏筛法中的重复筛去，需要制定一个规则：
+		对于合数，一定有合数=质因子1*质因子2*...*质因子n，
+		例如30=2*3*5，
+		如果是埃氏筛法，会在2，3和5的时候各筛一次，显然重复了.
+		对于欧拉筛法，我们规定只在质因子最小的时候筛掉这个合数.
+		只在30=15*2的时候筛掉30，而不在30=10*3或者30=6*5时筛掉，
+		因为对于合数=因子1*质因子1，如果有因子1%质因子2==0（质因子1>质因子2），则合数=因子2*质因子2，
+		因子2=因子1/质因子2*质因子1，这样质因子从小到大，如果发现因子i%质因子j==0，就可以停止筛数，将应该在本轮筛的合数移到后面去筛，
+		这样就可以保证每个合数只在质因子最小的时候筛一次*/
+	vector<int>primeNum;
+	//1不是质数
+	this->isPrime[1] = false;
+	for (int i = 2; i <= this->upper_boundary; i++)
+	{
+		//如果i是合数，i的质因子一定是小于i的，遍历到i之前就会把i置false.如果遍历到i还是true,只能说明i是质数
+		if (this->isPrime[i])
+		{
+			primeNum.emplace_back(i);
+		}
+		for (int j = 0; j < primeNum.size(); j++)
+		{
+			//质因子从小往大遍历
+			if (i * primeNum[j] > this->upper_boundary)
+			{
+				break;
+			}
+			isPrime[i * primeNum[j]] = false;
+			if (i % primeNum[j] == 0)
+			{
+				//后面还未遍历的质因子都不是最小质因子了，退出本轮筛选（本轮最小质因子是primeNum[j])
+				break;
+			}
+		}
+	}
+}
